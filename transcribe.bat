@@ -1,1 +1,1 @@
-@python "C:\ZestoScripts\transcribe_audio.py" %*
+@python "C:\Scripts\transcribe_audio.py" %*
