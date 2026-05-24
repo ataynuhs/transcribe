@@ -1,64 +1,174 @@
 🎙️ Local Whisper AI Transcription Setup Guide
-This guide details how to configure a Windows PC to run a fully offline, accelerated transcription pipeline using the faster-whisper engine, referencing your pre-existing transcribe_audio.py script.
+===========================================================
+
+This guide details how to configure a Windows PC to run a fully offline,
+accelerated transcription pipeline using the faster-whisper engine, referencing
+your pre-existing transcribe_audio.py script.
+
 
 1. System Hardware Identification
-Before installing any AI libraries, verify your system's hardware to ensure you download the correct compute packages. Open a PowerShell window and run these commands:
+---------------------------------
 
-Check CPU: ```powershell (Get-CimInstance Win32_Processor).Name (Note: If you are using the older Command Prompt, you can use wmic cpu get name)
-Check GPU (NVIDIA): ```bash nvidia-smi
+Before installing any AI libraries, verify your system's hardware to ensure
+you download the correct compute packages. Open a PowerShell window and run
+these commands:
 
-(If this command fails, you either do not have an NVIDIA GPU, or you need to install the latest NVIDIA drivers).
+Check CPU:
+```powershell
+(Get-CimInstance Win32_Processor).Name
+```
+*(Note: If you are using the older Command Prompt, you can use `wmic cpu get name`)*
 
-Base Installation & Prerequisites Step A: Python If you have Python installed: Ensure it is at least version 3.10+. (Python 3.13 via the Microsoft Store is highly recommended for Windows).
-If you do not have Python: Open the Microsoft Store app, search for "Python 3.13", and click Install.
+Check GPU (NVIDIA):
+```bash
+nvidia-smi
+```
 
-Step B: FFmpeg (Audio Extraction) FFmpeg is required to slice and format audio before passing it to the AI.
+*(If this command fails, you either do not have an NVIDIA GPU, or you need to
+install the latest NVIDIA drivers).*
+
+
+2. Base Installation & Prerequisites
+------------------------------------
+
+### Step A: Python
+
+If you have Python installed:
+- Ensure it is at least version 3.10+.
+- Python 3.13 via the Microsoft Store is highly recommended for Windows.
+
+If you do not have Python:
+- Open the Microsoft Store app, search for "Python 3.13", and click Install.
+
+
+### Step B: FFmpeg (Audio Extraction)
+
+FFmpeg is required to slice and format audio before passing it to the AI.
 
 Run this command in an Administrator PowerShell to install it silently:
 
-PowerShell winget install Gyan.FFmpeg --silent Close and reopen your terminal to refresh the system path.
+```powershell
+winget install Gyan.FFmpeg --silent
+```
 
-Step C: Where are the AI Models Saved? When the script runs for the first time, it will automatically download the requested AI models from Hugging Face. They are permanently cached in a hidden folder on your user drive:
+Close and reopen your terminal to refresh the system path.
 
-Location: C:\Users<YourUsername>.cache\huggingface\hub\
 
-Hardware Configuration (GPU vs. CPU) The faster-whisper engine is incredibly flexible and will run on both dedicated GPUs and standard CPUs. You just need to install the correct math routing libraries.
-For NVIDIA RTX GPUs (e.g., RTX 5070 Ti) If nvidia-smi successfully displayed your GPU, install the CUDA-enabled version of PyTorch so the workload routes to your VRAM.
+### Step C: AI Model Cache Location
 
-Bash pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 Script Note: Ensure your model initialization uses device="cuda" and compute_type="float16".
+When the script runs for the first time, it will automatically download the
+requested AI models from Hugging Face. They are permanently cached in a
+hidden folder on your user drive:
 
-For Systems Without a GPU (CPU-Only) faster-whisper works wonderfully on standard processors using a highly optimized engine called CTranslate2. Install the standard CPU tensor libraries:
+```
+C:\Users\<YourUsername>\.cache\huggingface\hub\
+```
 
-Bash pip install torch torchvision torchaudio Script Note: You must change your script's initialization parameters to device="cpu" and compute_type="int8" to prevent memory errors.
 
-Install the Whisper Engine Once your hardware routing (PyTorch) is configured, install the core transcription library.
-Bash pip install faster-whisper 5. Global Batch Shortcut Setup To run your script from anywhere without typing long file paths, set up a global batch wrapper.
+3. Hardware Configuration (GPU vs. CPU)
+----------------------------------------
 
-Locate your Python Script: Ensure your pre-existing transcribe_audio.py file is saved in a permanent directory (e.g., C:\Scripts\transcribe_audio.py).
+The faster-whisper engine is incredibly flexible and will run on both
+dedicated GPUs and standard CPUs. You just need to install the correct
+memory routing libraries.
 
-Create the Batch File: In that exact same folder, create a new text file named transcribe.bat.
+#### For NVIDIA RTX GPUs (e.g., RTX 5070 Ti)
 
-Link the Files: Open transcribe.bat in Notepad, paste the following line, and save it:
+If `nvidia-smi` successfully displayed your GPU, install the CUDA-enabled
+version of PyTorch so the workload routes to your VRAM.
 
-DOS @python "C:\Scripts\transcribe_audio.py" %* Update System Path:
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+```
 
-Press the Windows Key, type env, and select "Edit the system environment variables".
+**Script Note:** Ensure your model initialization uses `device="cuda"` and
+`compute_type="float16"`.
 
-Click Environment Variables, select Path under User variables, and click Edit.
+#### For Systems Without a GPU (CPU-Only)
 
-Click New, type C:\Scripts, and click OK.
+faster-whisper works wonderfully on standard processors using a highly
+optimized engine called CTranslate2. Install the standard CPU tensor libraries:
 
-Restart your terminal.
+```bash
+pip install torch torchvision torchaudio
+```
 
-Usage Examples You can now open a terminal in any folder on your computer and execute the pipeline using the transcribe command.
+**Script Note:** You must change your script's initialization parameters to
+`device="cpu"` and `compute_type="int8"` to prevent memory errors.
 
-Process a Single File (Default Settings)
 
-Bash transcribe "D:\Videos\HowToDoRocketScienceWithoutRocket.mkv" 2. Process an Entire Folder of Videos
+4. Install the Whisper Engine
+------------------------------
 
-Bash transcribe "D:\Coursework\DIY_Gazebo" 3. Use a Larger Model for Higher Accuracy
+Once your hardware routing (PyTorch) is configured, install the core
+transcription library:
 
-Bash transcribe "D:\Videos\ASwimTable.mkv" --model medium (Options include: base, small, medium, large-v3, large-v3-turbo)
+```bash
+pip install faster-whisper
+```
 
-Show Real-Time Processing (Verbose Mode)
-Bash transcribe "D:\Videos\HowToDoRocketScienceWithoutRocket.mkv" --model medium --verbose
+
+5. Global Batch Shortcut Setup
+------------------------------
+
+To run your script from anywhere without typing long file paths, set up a
+global batch wrapper.
+
+#### Locate Your Python Script
+
+Ensure your pre-existing `transcribe_audio.py` file is saved in a permanent
+directory (e.g., `C:\Scripts\transcribe_audio.py`).
+
+#### Create the Batch File
+
+In that exact same folder, create a new text file named `transcribe.bat`.
+
+#### Link the Files
+
+Open `transcribe.bat` in Notepad, paste the following line, and save it:
+
+```dos
+@python "C:\Scripts\transcribe_audio.py" %*
+```
+
+#### Update System Path
+
+1. Press the Windows Key, type `env`, and select "Edit the system environment variables".
+2. Click "Environment Variables".
+3. Select `Path` under User variables, and click "Edit".
+4. Click "New", type `C:\Scripts`, and click "OK".
+5. Restart your terminal.
+
+
+6. Usage Examples
+-----------------
+
+You can now open a terminal in any folder on your computer and execute the
+pipeline using the `transcribe` command.
+
+#### Process a Single File (Default Settings)
+
+```bash
+transcribe "D:\Videos\HowToDoRocketScienceWithoutRocket.mkv"
+```
+
+#### Process an Entire Folder of Videos
+
+```bash
+transcribe "D:\Coursework\DIY_Gazebo"
+```
+
+#### Use a Larger Model for Higher Accuracy
+
+```bash
+transcribe "D:\Videos\ASwimTable.mkv" --model medium
+```
+
+*(Options include: base, small, medium, large-v3, large-v3-turbo)*
+
+#### Show Real-Time Processing (Verbose Mode)
+
+```bash
+transcribe "D:\Videos\HowToDoRocketScienceWithoutRocket.mkv" --model medium --verbose
+```
+
