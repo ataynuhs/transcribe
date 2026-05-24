@@ -1,0 +1,1 @@
+@python "C:\ZestoScripts\transcribe_audio.py" %*
